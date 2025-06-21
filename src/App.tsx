@@ -13,13 +13,23 @@ function createEmptyGrid(size: number) {
 	);
 }
 
-function placeWords(grid: string[][], words: string[]) {
-	const directions = [
+const [allowBackwards, setAllowBackwards] = createSignal(false);
+
+function getDirections() {
+	const base = [
 		[0, 1], // right
 		[1, 0], // down
 		[1, 1], // diagonal down-right
 		[-1, 1], // diagonal up-right
 	];
+	if (allowBackwards()) {
+		return base.concat(base.map(([dr, dc]) => [-dr, -dc]));
+	}
+	return base;
+}
+
+function placeWords(grid: string[][], words: string[]) {
+	const directions = getDirections();
 	for (const word of words) {
 		let placed = false;
 		for (let attempts = 0; attempts < 100 && !placed; attempts++) {
@@ -168,6 +178,19 @@ function App() {
 	return (
 		<div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
 			<h1 class="text-3xl font-bold mb-4">Word Search Game</h1>
+			<div class="mb-2">
+				<label class="flex items-center gap-2">
+					<input
+						type="checkbox"
+						checked={allowBackwards()}
+						onInput={(e) => {
+							setAllowBackwards(e.currentTarget.checked);
+							resetGame();
+						}}
+					/>
+					Allow Backwards Words
+				</label>
+			</div>
 			<div class="mb-4">
 				Words to find:
 				<ul class="flex gap-4 mt-2">
