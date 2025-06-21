@@ -1,6 +1,7 @@
+import { generate } from "random-words";
 import { createSignal } from "solid-js";
 
-const WORDS = ["SOLID", "JAVASCRIPT", "TAILWIND", "VITE", "SEARCH"];
+const WORD_COUNT = 5;
 const GRID_SIZE = 10;
 
 function getRandomInt(max: number) {
@@ -74,28 +75,35 @@ function fillGridRandom(grid: string[][]) {
 	}
 }
 
-function getDefaultGrid() {
-	const g = createEmptyGrid(GRID_SIZE);
-	placeWords(g, WORDS);
-	fillGridRandom(g);
-	return g;
+function generateRandomWords(): string[] {
+	return (generate(WORD_COUNT) as string[]).map((word) => word.toUpperCase());
 }
 
 function App() {
+	const [hiddenWords, setHiddenWords] = createSignal<string[]>(
+		generateRandomWords(),
+	);
 	const [selected, setSelected] = createSignal<[number, number][]>([]);
 	const [found, setFound] = createSignal<string[]>([]);
 	const [grid, setGrid] = createSignal<string[][]>(getDefaultGrid());
+
+	function getDefaultGrid() {
+		const g = createEmptyGrid(GRID_SIZE);
+		placeWords(g, hiddenWords());
+		fillGridRandom(g);
+		return g;
+	}
 
 	function handleCellClick(row: number, col: number) {
 		const sel: [number, number][] = [...selected(), [row, col]];
 		setSelected(sel);
 		const word = sel.map(([r, c]) => grid()[r][c]).join("");
 		const reversed = word.split("").reverse().join("");
-		const matched = WORDS.find((w) => w === word || w === reversed);
+		const matched = hiddenWords().find((w) => w === word || w === reversed);
 		if (matched && !found().includes(matched)) {
 			setFound([...found(), matched]);
 			setSelected([]);
-		} else if (word.length > Math.max(...WORDS.map((w) => w.length))) {
+		} else if (word.length > Math.max(...hiddenWords().map((w) => w.length))) {
 			setSelected([]);
 		}
 	}
@@ -167,10 +175,8 @@ function App() {
 	}
 
 	function resetGame() {
-		const g = createEmptyGrid(GRID_SIZE);
-		placeWords(g, WORDS);
-		fillGridRandom(g);
-		setGrid(g);
+		setHiddenWords(generateRandomWords());
+		setGrid(getDefaultGrid());
 		setSelected([]);
 		setFound([]);
 	}
@@ -194,7 +200,7 @@ function App() {
 			<div class="mb-4">
 				Words to find:
 				<ul class="flex gap-4 mt-2">
-					{WORDS.map((word) => (
+					{hiddenWords().map((word) => (
 						<li
 							class={
 								found().includes(word) ? "line-through text-green-600" : ""
@@ -229,7 +235,7 @@ function App() {
 					Restart Game
 				</button>
 			</div>
-			{found().length === WORDS.length && (
+			{found().length === hiddenWords().length && (
 				<div class="mt-4 text-xl text-green-700 font-bold">
 					You found all the words!
 				</div>
