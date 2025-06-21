@@ -10,15 +10,11 @@ function App() {
 				<button
 					type="button"
 					onClick={() => setCount((count) => count + 1)}
-					class="bg-blue-500 text-white font-bold py-2 px-4 mb-8 rounded"
+					class="btn mb-8"
 				>
 					count is {count()}
 				</button>
-				<button
-					type="button"
-					onClick={() => setCount(0)}
-					class="bg-blue-500 text-white font-bold py-2 px-4 mb-8 rounded"
-				>
+				<button type="button" onClick={() => setCount(0)} class="btn mb-8">
 					Reset
 				</button>
 			</div>
